@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="./index.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="card">
+      <div class="tools">
+        <div class="circle">
+          <span class="red box"></span>
+        </div>
+        <div class="circle">
+          <span class="yellow box"></span>
+        </div>
+        <div class="circle">
+          <span class="green box"></span>
+        </div>
+      </div>
+      <form class="main-box">
+        <div class="chat-content">
+          <div class="line">
+            <span class="chat-box">시설에 대해 물어보세요!</span>
+          </div>
+          <div class="line">
+            <span class="chat-box mine">(ex. 정하상관에서 공부할 수 있는 곳은 어디야?)</span>
+          </div>
+        </div>
+        <div class="submit_box">
+          <input class="input-box" id="input" />
+          <button type="submit" id="send" class="sendbtn" disabled="true">
+            전송
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script type="module">
+      const inputTag = document.querySelector("input");
+      import { Configuration, OpenAIApi } from "https://cdn.skypack.dev/openai";
+
+      document.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        inputTag.value = "";
+        inputTag.focus();
+      });
+
+      document.querySelector("#send").addEventListener("click", function () {
+        var template = `<div class="line">
+        <span class="chat-box mine">${
+          document.querySelector("#input").value
+        }</span>
+      </div>`;
+        document
+          .querySelector(".chat-content")
+          .insertAdjacentHTML("beforeend", template);
+
+        const configuration = new Configuration({
+          apiKey: "api key",
+        });
+        const openai = new OpenAIApi(configuration);
+
+        openai
+          .createCompletion({
+            model: "davinci:ft-sogang-release01-2023-04-24-09-28-48",
+            prompt: document.querySelector("#input").value,
+            temperature: 0.7,
+            max_tokens: 256,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+          })
+          .then((result) => {
+            console.log(result.data.choices[0].text);
+            var template = `<div class="line">
+          <span class="chat-box">${result.data.choices[0].text}</span>
+        </div>`;
+            document
+              .querySelector(".chat-content")
+              .insertAdjacentHTML("beforeend", template);
+            $(".chat-content").animate(
+              {
+                scrollTop: $(".chat-content").get(0).scrollHeight,
+              },
+              100
+            );
+          });
+        $(".chat-content").animate(
+          {
+            scrollTop: $(".chat-content").get(0).scrollHeight,
+          },
+          100
+        );
+      });
+
+      inputTag.addEventListener("input", () => {
+        if (inputTag.value === "") {
+          document.querySelector("#send").disabled = true;
+        } else {
+          document.querySelector("#send").disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
